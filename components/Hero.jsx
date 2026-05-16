@@ -542,119 +542,6 @@ function DesktopNav({ activeItem, setActive }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   MOBILE BOTTOM DOCK
-══════════════════════════════════════════════════════════════════════ */
-function MobileBottomDock({ activeItem, setActive }) {
-    return (
-        <div style={{
-            position: "fixed", bottom: 16, left: "50%", translateX: "-50%",
-            width: "calc(100% - 24px)", maxWidth: 440,
-            zIndex: 100,
-            transform: "translateX(-50%)",
-        }}>
-            {/* Ambient glow */}
-            <div style={{
-                position: "absolute", inset: 0, borderRadius: 99,
-                background: "rgba(201,168,76,0.15)", filter: "blur(24px)",
-                pointerEvents: "none",
-            }} />
-
-            <motion.nav
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, ease: T.ease, delay: 0.3 }}
-                style={{
-                    position: "relative",
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "12px 20px 10px",
-                    borderRadius: 99,
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    background: "rgba(14,13,11,0.55)",
-                    backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)",
-                    boxShadow: "0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.06) inset",
-                }}
-            >
-                {NAV_ITEMS.map((item, i) => {
-                    const isActive = activeItem === item.name;
-                    return (
-                        <motion.a
-                            key={i}
-                            href={item.href}
-                            onClick={() => setActive(item.name)}
-                            style={{
-                                display: "flex", flexDirection: "column", alignItems: "center",
-                                gap: 3, textDecoration: "none", cursor: "pointer",
-                                flex: 1, minWidth: 0, padding: "2px 0",
-                                WebkitTapHighlightColor: "transparent",
-                            }}
-                            whileTap={{ scale: 0.88 }}
-                        >
-                            {/* Icon pill */}
-                            <motion.div
-                                style={{
-                                    position: "relative",
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    width: 36, height: 30, borderRadius: 12,
-                                }}
-                                animate={isActive ? {
-                                    background: "rgba(201,168,76,0.14)",
-                                    boxShadow: "0 0 14px rgba(201,168,76,0.18)",
-                                } : {
-                                    background: "transparent",
-                                    boxShadow: "none",
-                                }}
-                                transition={{ duration: 0.35 }}
-                            >
-                                {/* Active glow */}
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="dock-glow"
-                                        style={{
-                                            position: "absolute", inset: -4, borderRadius: 16,
-                                            background: "rgba(201,168,76,0.1)",
-                                            filter: "blur(8px)",
-                                        }}
-                                        transition={{ duration: 0.3 }}
-                                    />
-                                )}
-
-                                <motion.span
-                                    style={{
-                                        fontSize: 20,
-                                        display: "flex", alignItems: "center",
-                                        position: "relative", zIndex: 1,
-                                    }}
-                                    animate={{
-                                        color: isActive ? T.gold : "rgba(245,240,232,0.55)",
-                                        y: isActive ? -2 : 0,
-                                    }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    {item.icon}
-                                </motion.span>
-                            </motion.div>
-
-                            {/* Label */}
-                            <motion.span
-                                style={{
-                                    fontFamily: "'Outfit',sans-serif", fontWeight: 300,
-                                    fontSize: 9, letterSpacing: "0.1em",
-                                    textTransform: "uppercase",
-                                }}
-                                animate={{ color: isActive ? T.gold : "rgba(245,240,232,0.38)" }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {item.name}
-                            </motion.span>
-                        </motion.a>
-                    );
-                })}
-            </motion.nav>
-        </div>
-    );
-}
-
-/* ══════════════════════════════════════════════════════════════════════
    MOBILE MENU OVERLAY (hamburger → full screen on mobile)
 ══════════════════════════════════════════════════════════════════════ */
 function MobileMenuOverlay({ open, onClose, activeItem, setActive }) {
@@ -884,11 +771,7 @@ export default function Hero() {
           .sss-mobile-top  { display:none; }
         }
 
-        /* Hide mobile dock on desktop */
-        .sss-mobile-dock { display:block; }
-        @media (min-width:1024px) {
-          .sss-mobile-dock { display:none; }
-        }
+
       `}</style>
 
             {/* Custom cursor — only mounted client-side, no SSR */}
@@ -1208,22 +1091,14 @@ export default function Hero() {
                     }} />
                 </motion.div>
 
-                {/* ── SCROLL INDICATOR ── */}
-                <ScrollDot />
+                {/* ── SCROLL INDICATOR ──
+                <ScrollDot /> */}
 
                 {/* ── CORNER BRACKETS ── */}
                 <Corners />
 
             </section>
 
-            {/* ══════════════════════════════════════════
-                MOBILE BOTTOM DOCK
-                Sits OUTSIDE the hero section so it
-                floats over all subsequent sections too.
-            ══════════════════════════════════════════ */}
-            <div className="sss-mobile-dock">
-                <MobileBottomDock activeItem={activeItem} setActive={setActive} />
-            </div>
         </>
     );
 }
