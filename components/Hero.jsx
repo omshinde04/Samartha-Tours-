@@ -3,14 +3,14 @@
 /**
  * ╔══════════════════════════════════════════════════════════════════╗
  * ║  SHREE SWAMI SAMARTHA TOURS & TRAVELS                          ║
- * ║  Unified Hero + Navbar · Hydration-safe · Mobile-first         ║
- * ║  Stack: Next.js · Framer Motion · GSAP ScrollTrigger           ║
+ * ║  Hero.jsx — Standalone · Mobile-first · Hydration-safe         ║
+ * ║  Stack: Next.js App Router · Framer Motion · GSAP ScrollTrigger║
  * ╚══════════════════════════════════════════════════════════════════╝
  *
  * Place at:  app/components/Hero.jsx
  * Use in:    app/page.jsx  →  <Hero />
  *
- * DELETE your separate Navbar component — this file includes both.
+ * Navbar is now a SEPARATE component → app/components/Navbar.jsx
  * npm install gsap framer-motion react-icons
  */
 
@@ -19,33 +19,19 @@ import {
     motion,
     useMotionValue,
     useSpring,
-    AnimatePresence,
 } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import {
-    FiArrowRight,
-    FiChevronDown,
-    FiCompass,
-    FiMenu,
-    FiX,
-} from "react-icons/fi";
-import {
-    HiOutlineHome,
-    HiOutlineUser,
-    HiOutlineBriefcase,
-    HiOutlinePhotograph,
-    HiOutlinePhone,
-} from "react-icons/hi";
+import { FiArrowRight, FiChevronDown, FiCompass } from "react-icons/fi";
 
-/* ── GSAP client-safe registration ──────────────────────────────────── */
+/* ── GSAP client-safe registration ───────────────────────────────────────── */
 if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   DESIGN TOKENS
-══════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS  (keep in sync with Navbar.jsx)
+══════════════════════════════════════════════════════════════════════════ */
 const T = {
     gold: "#c9a84c",
     goldLt: "#e8c97a",
@@ -55,25 +41,12 @@ const T = {
     ease: [0.16, 1, 0.3, 1],
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   NAV ITEMS  (single source of truth — used in desktop + mobile)
-══════════════════════════════════════════════════════════════════════ */
-const NAV_ITEMS = [
-    { name: "Home", href: "#home", icon: <HiOutlineHome /> },
-    { name: "About", href: "#about", icon: <HiOutlineUser /> },
-    { name: "Services", href: "#services", icon: <HiOutlineBriefcase /> },
-    { name: "Gallery", href: "#gallery", icon: <HiOutlinePhotograph /> },
-    { name: "Contact", href: "#contact", icon: <HiOutlinePhone /> },
-];
-
-/* ══════════════════════════════════════════════════════════════════════
-   PARTICLES  — seeded so server & client produce identical markup
-   We use a simple LCG so there's zero randomness on each hydration.
-══════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   PARTICLES — seeded LCG for identical server + client output
+══════════════════════════════════════════════════════════════════════════ */
 const PARTICLE_COUNT = 22;
 
 function lcg(seed) {
-    // returns a fn that yields the next pseudo-random float [0,1)
     let s = seed;
     return () => {
         s = (s * 1664525 + 1013904223) & 0xffffffff;
@@ -82,7 +55,7 @@ function lcg(seed) {
 }
 
 function mkParticles() {
-    const rng = lcg(42); // fixed seed → same on server & client
+    const rng = lcg(42);
     return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
         id: i,
         x: rng() * 100,
@@ -95,41 +68,43 @@ function mkParticles() {
     }));
 }
 
-/* Pre-compute once at module level — identical on server & client */
-const PARTICLES = mkParticles();
+const PARTICLES = mkParticles(); // module-level, identical everywhere
 
-/* ══════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════════════
    FRAMER MOTION VARIANTS
-══════════════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════════════════ */
 const stagger = {
     hidden: {},
     show: { transition: { staggerChildren: 0.15, delayChildren: 0.45 } },
 };
+
 const fadeUp = (delay = 0) => ({
     hidden: { opacity: 0, y: 40, skewY: 1.2 },
     show: {
         opacity: 1, y: 0, skewY: 0,
-        transition: { duration: 1.35, ease: T.ease, delay },
+        transition: { duration: 1.35, ease: T.ease, delay }
     },
 });
+
 const fadeIn = (delay = 0) => ({
     hidden: { opacity: 0, y: 22 },
     show: {
         opacity: 1, y: 0,
-        transition: { duration: 1.1, ease: T.ease, delay },
+        transition: { duration: 1.1, ease: T.ease, delay }
     },
 });
+
 const popIn = {
     hidden: { opacity: 0, scale: 0.88 },
     show: {
         opacity: 1, scale: 1,
-        transition: { duration: 0.72, ease: T.ease },
+        transition: { duration: 0.72, ease: T.ease }
     },
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   MAGNETIC HOOK  (no-op on touch)
-══════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   MAGNETIC BUTTON HOOK  (no-op on touch devices)
+══════════════════════════════════════════════════════════════════════════ */
 function useMagnetic(s = 0.3) {
     const ref = useRef(null);
     const mx = useMotionValue(0);
@@ -149,10 +124,11 @@ function useMagnetic(s = 0.3) {
     return { ref, sx, sy, onMove, onLeave };
 }
 
-/* ══════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════════════
    SUB-COMPONENTS
-══════════════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════════════════ */
 
+/* Thin gold rule */
 const GoldRule = ({ w = 22 }) => (
     <span style={{
         display: "inline-block", flexShrink: 0,
@@ -160,6 +136,7 @@ const GoldRule = ({ w = 22 }) => (
     }} />
 );
 
+/* Eyebrow label */
 const Eyebrow = ({ children }) => (
     <div style={{
         display: "flex", alignItems: "center", gap: 10,
@@ -175,6 +152,7 @@ const Eyebrow = ({ children }) => (
     </div>
 );
 
+/* Ambient floating particles */
 function Particles() {
     return (
         <div style={{
@@ -194,13 +172,17 @@ function Particles() {
                         opacity: [p.opacity * 0.35, p.opacity, p.opacity * 0.28],
                         scale: [1, 1.7, 1],
                     }}
-                    transition={{ repeat: Infinity, duration: p.duration, delay: p.delay, ease: "easeInOut" }}
+                    transition={{
+                        repeat: Infinity, duration: p.duration,
+                        delay: p.delay, ease: "easeInOut",
+                    }}
                 />
             ))}
         </div>
     );
 }
 
+/* Stat pill */
 function Stat({ value, label }) {
     return (
         <div style={{
@@ -226,11 +208,13 @@ function Stat({ value, label }) {
     );
 }
 
+/* Shimmer sweep on primary button */
 function Shimmer() {
     return (
         <motion.span style={{
             position: "absolute", inset: 0, borderRadius: 99,
-            background: "linear-gradient(105deg,transparent 20%,rgba(255,255,255,0.26) 50%,transparent 80%)",
+            background:
+                "linear-gradient(105deg,transparent 20%,rgba(255,255,255,0.26) 50%,transparent 80%)",
             backgroundSize: "300% 100%",
         }}
             animate={{ backgroundPosition: ["220% center", "-220% center"] }}
@@ -239,6 +223,7 @@ function Shimmer() {
     );
 }
 
+/* Primary CTA — Book Now */
 function BookBtn() {
     const { ref, sx, sy, onMove, onLeave } = useMagnetic(0.28);
     return (
@@ -261,7 +246,7 @@ function BookBtn() {
             onMouseMove={onMove} onMouseLeave={onLeave}
             whileTap={{ scale: 0.96 }}
             whileHover={{ boxShadow: "0 12px 52px rgba(201,168,76,0.52)" }}
-            aria-label="Book your tour"
+            aria-label="Book your luxury tour"
         >
             <Shimmer />
             <span style={{ position: "relative", zIndex: 1 }}>Book Now</span>
@@ -273,6 +258,7 @@ function BookBtn() {
     );
 }
 
+/* Glass secondary button — WhatsApp / Explore */
 function GlassBtn({ children, borderClr = "rgba(255,255,255,0.13)",
     textClr = "rgba(245,240,232,0.82)", ariaLabel, href }) {
     const { ref, sx, sy, onMove, onLeave } = useMagnetic(0.28);
@@ -302,11 +288,13 @@ function GlassBtn({ children, borderClr = "rgba(255,255,255,0.13)",
     );
 }
 
+/* Animated scroll indicator */
 function ScrollDot() {
     return (
         <motion.div style={{
-            position: "absolute", bottom: "clamp(80px,11vw,36px)", left: "50%",
-            translateX: "-50%",
+            position: "absolute",
+            bottom: "clamp(20px,4vw,32px)",
+            left: "50%", translateX: "-50%",
             display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
             zIndex: 30, pointerEvents: "none",
         }}
@@ -326,14 +314,17 @@ function ScrollDot() {
                 animate={{ scaleY: [0.2, 1, 0.2], opacity: [0.3, 1, 0.3] }}
                 transition={{ repeat: Infinity, duration: 2.3, ease: "easeInOut" }}
             />
-            <motion.div animate={{ y: [0, 5, 0] }}
-                transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}>
+            <motion.div
+                animate={{ y: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
+            >
                 <FiChevronDown size={11} color="rgba(201,168,76,0.55)" />
             </motion.div>
         </motion.div>
     );
 }
 
+/* Cinematic corner brackets */
 function Corners() {
     const b = "1px solid rgba(201,168,76,0.26)";
     const c = (extra) => ({
@@ -341,9 +332,12 @@ function Corners() {
         pointerEvents: "none", zIndex: 30, ...extra,
     });
     return (
-        <motion.div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            transition={{ delay: 1.9, duration: 1.3 }}>
+        <motion.div
+            style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.9, duration: 1.3 }}
+        >
             <div style={c({ top: 14, left: 14, borderTop: b, borderLeft: b })} />
             <div style={c({ top: 14, right: 14, borderTop: b, borderRight: b })} />
             <div style={c({ bottom: 14, right: 14, borderBottom: b, borderRight: b })} />
@@ -352,13 +346,14 @@ function Corners() {
     );
 }
 
+/* WhatsApp icon */
 const WA = () => (
     <svg width={13} height={13} viewBox="0 0 24 24" fill="currentColor">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
     </svg>
 );
 
-/* Custom cursor — fine-pointer only, rendered client-side */
+/* Custom cursor — fine-pointer devices only, mounted client-side */
 function CustomCursor() {
     const mx = useMotionValue(-200);
     const my = useMotionValue(-200);
@@ -391,271 +386,12 @@ function CustomCursor() {
     );
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   DESKTOP TOP NAVBAR  — luxury glass bar
-══════════════════════════════════════════════════════════════════════ */
-function DesktopNav({ activeItem, setActive }) {
-    return (
-        <motion.header
-            style={{
-                position: "absolute", top: 0, left: 0, right: 0, zIndex: 50,
-                padding: "clamp(12px,2.5vw,24px) clamp(16px,4vw,48px)",
-            }}
-            initial={{ opacity: 0, y: -28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2, ease: T.ease }}
-        >
-            {/* Ambient glow behind bar */}
-            <div style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(to bottom,rgba(201,168,76,0.06),transparent)",
-                pointerEvents: "none", filter: "blur(24px)",
-            }} />
-
-            <div style={{
-                position: "relative",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                height: 72,
-                borderRadius: 30,
-                border: "1px solid rgba(255,255,255,0.08)",
-                background: "rgba(14,13,11,0.35)",
-                backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)",
-                padding: "0 clamp(16px,3vw,32px)",
-            }}>
-
-                {/* ── Logo ── */}
-                <div style={{ position: "relative" }}>
-                    <div style={{
-                        position: "absolute", inset: -20, borderRadius: "50%",
-                        background: "rgba(201,168,76,0.15)", filter: "blur(28px)",
-                        pointerEvents: "none",
-                    }} />
-                    <div style={{ position: "relative" }}>
-                        <h1 style={{
-                            fontFamily: "'Cormorant Garamond',serif", fontWeight: 600,
-                            fontSize: "clamp(14px,2vw,20px)", color: T.ivory,
-                            letterSpacing: "0.04em", margin: 0, lineHeight: 1.1,
-                        }}>Shree Swami Samartha</h1>
-                        <p style={{
-                            fontFamily: "'Outfit',sans-serif", fontWeight: 300,
-                            fontSize: "clamp(7px,0.9vw,9px)", letterSpacing: "0.45em",
-                            textTransform: "uppercase", color: T.gold,
-                            margin: "2px 0 0", lineHeight: 1,
-                        }}>Tours &amp; Travels</p>
-                    </div>
-                </div>
-
-                {/* ── Nav links ── */}
-                <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    {NAV_ITEMS.map((item, i) => (
-                        <motion.a
-                            key={i}
-                            href={item.href}
-                            onClick={() => setActive(item.name)}
-                            style={{
-                                position: "relative", overflow: "hidden",
-                                display: "flex", alignItems: "center", gap: 8,
-                                padding: "10px 18px", borderRadius: 99,
-                                border: "1px solid transparent",
-                                textDecoration: "none", cursor: "pointer",
-                                fontFamily: "'Outfit',sans-serif", fontWeight: 400,
-                                fontSize: "clamp(9px,1.1vw,12px)", letterSpacing: "0.18em",
-                                textTransform: "uppercase",
-                                color: activeItem === item.name
-                                    ? T.gold
-                                    : "rgba(245,240,232,0.6)",
-                                transition: "color 0.4s",
-                            }}
-                            whileHover={{ y: -2 }}
-                            whileTap={{ scale: 0.96 }}
-                            animate={activeItem === item.name ? {
-                                borderColor: "rgba(201,168,76,0.2)",
-                                background: "rgba(255,255,255,0.04)",
-                            } : {
-                                borderColor: "transparent",
-                                background: "transparent",
-                            }}
-                            transition={{ duration: 0.35 }}
-                        >
-                            {/* Hover glow */}
-                            <motion.div style={{
-                                position: "absolute", inset: 0, borderRadius: 99,
-                                background: "rgba(201,168,76,0)",
-                                filter: "blur(18px)",
-                            }}
-                                whileHover={{ background: "rgba(201,168,76,0.08)" }}
-                                transition={{ duration: 0.4 }}
-                            />
-
-                            {/* Icon */}
-                            <span style={{
-                                position: "relative", fontSize: 15,
-                                color: activeItem === item.name
-                                    ? T.gold
-                                    : "rgba(245,240,232,0.45)",
-                                transition: "color 0.4s",
-                                display: "flex", alignItems: "center",
-                            }}>
-                                {item.icon}
-                            </span>
-
-                            {/* Label */}
-                            <span style={{ position: "relative" }}>{item.name}</span>
-
-                            {/* Bottom underline */}
-                            <motion.span style={{
-                                position: "absolute", bottom: 0, left: "50%",
-                                height: 2, borderRadius: 99,
-                                background: `linear-gradient(90deg,${T.goldDk},${T.gold})`,
-                                translateX: "-50%",
-                            }}
-                                animate={{ width: activeItem === item.name ? "55%" : "0%" }}
-                                transition={{ duration: 0.4, ease: T.ease }}
-                            />
-                        </motion.a>
-                    ))}
-                </nav>
-
-                {/* ── CTA ── */}
-                <motion.button
-                    style={{
-                        position: "relative", overflow: "hidden",
-                        display: "flex", alignItems: "center", gap: 8,
-                        padding: "11px 24px", borderRadius: 99,
-                        background: `linear-gradient(135deg,${T.gold},${T.goldDk})`,
-                        border: "none", cursor: "pointer",
-                        fontFamily: "'Outfit',sans-serif", fontWeight: 500,
-                        fontSize: "clamp(9px,1.1vw,12px)", letterSpacing: "0.18em",
-                        textTransform: "uppercase", color: T.charcoal,
-                        boxShadow: "0 6px 30px rgba(201,168,76,0.28)",
-                    }}
-                    whileHover={{ scale: 1.04, boxShadow: "0 10px 44px rgba(201,168,76,0.48)" }}
-                    whileTap={{ scale: 0.96 }}
-                >
-                    <Shimmer />
-                    <span style={{ position: "relative", zIndex: 1 }}>Book Now</span>
-                    <FiArrowRight size={12} strokeWidth={2.5} style={{ position: "relative", zIndex: 1 }} />
-                </motion.button>
-            </div>
-        </motion.header>
-    );
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   MOBILE MENU OVERLAY (hamburger → full screen on mobile)
-══════════════════════════════════════════════════════════════════════ */
-function MobileMenuOverlay({ open, onClose, activeItem, setActive }) {
-    return (
-        <AnimatePresence>
-            {open && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    style={{
-                        position: "fixed", inset: 0, zIndex: 200,
-                        background: "rgba(14,13,11,0.96)",
-                        backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-                        display: "flex", flexDirection: "column",
-                        alignItems: "center", justifyContent: "center", gap: 8,
-                    }}
-                >
-                    {/* Close */}
-                    <motion.button
-                        onClick={onClose}
-                        style={{
-                            position: "absolute", top: 24, right: 24,
-                            background: "rgba(255,255,255,0.06)",
-                            border: "1px solid rgba(201,168,76,0.2)",
-                            borderRadius: "50%", width: 44, height: 44,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            color: T.gold, cursor: "pointer",
-                        }}
-                        whileTap={{ scale: 0.9 }}
-                    >
-                        <FiX size={18} />
-                    </motion.button>
-
-                    {/* Logo inside overlay */}
-                    <div style={{ marginBottom: 32, textAlign: "center" }}>
-                        <h2 style={{
-                            fontFamily: "'Cormorant Garamond',serif", fontWeight: 400,
-                            fontSize: 26, color: T.ivory, letterSpacing: "0.04em",
-                            margin: 0, lineHeight: 1.1,
-                        }}>Shree Swami Samartha</h2>
-                        <p style={{
-                            fontFamily: "'Outfit',sans-serif", fontWeight: 300,
-                            fontSize: 8, letterSpacing: "0.45em",
-                            textTransform: "uppercase", color: T.gold, margin: "4px 0 0",
-                        }}>Tours &amp; Travels</p>
-                    </div>
-
-                    {/* Gold divider */}
-                    <div style={{
-                        width: 48, height: 1,
-                        background: `linear-gradient(90deg,transparent,${T.gold},transparent)`,
-                        marginBottom: 24,
-                    }} />
-
-                    {NAV_ITEMS.map((item, i) => (
-                        <motion.a
-                            key={i}
-                            href={item.href}
-                            onClick={() => { setActive(item.name); onClose(); }}
-                            initial={{ opacity: 0, x: -24 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.07 + 0.1, ease: T.ease }}
-                            style={{
-                                display: "flex", alignItems: "center", gap: 16,
-                                padding: "14px 32px", borderRadius: 14, width: "80%", maxWidth: 280,
-                                background: activeItem === item.name
-                                    ? "rgba(201,168,76,0.1)" : "transparent",
-                                border: `1px solid ${activeItem === item.name
-                                    ? "rgba(201,168,76,0.25)" : "rgba(255,255,255,0.05)"}`,
-                                textDecoration: "none", cursor: "pointer",
-                                color: activeItem === item.name
-                                    ? T.gold : "rgba(245,240,232,0.7)",
-                                fontFamily: "'Outfit',sans-serif", fontWeight: 300,
-                                fontSize: 14, letterSpacing: "0.18em",
-                                textTransform: "uppercase",
-                            }}
-                            whileTap={{ scale: 0.97 }}
-                        >
-                            <span style={{ fontSize: 20, display: "flex" }}>{item.icon}</span>
-                            {item.name}
-                        </motion.a>
-                    ))}
-
-                    <motion.button
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        style={{
-                            marginTop: 28,
-                            display: "flex", alignItems: "center", gap: 10,
-                            padding: "14px 36px", borderRadius: 99,
-                            background: `linear-gradient(135deg,${T.gold},${T.goldDk})`,
-                            border: "none", cursor: "pointer",
-                            fontFamily: "'Outfit',sans-serif", fontWeight: 500,
-                            fontSize: 12, letterSpacing: "0.2em",
-                            textTransform: "uppercase", color: T.charcoal,
-                            boxShadow: "0 8px 30px rgba(201,168,76,0.35)",
-                        }}
-                        whileTap={{ scale: 0.96 }}
-                    >
-                        Book Now <FiArrowRight size={13} strokeWidth={2.5} />
-                    </motion.button>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
-}
-
-/* ══════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════════════
    MAIN HERO EXPORT
-══════════════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════════════════ */
 export default function Hero() {
 
+    /* ── Refs ── */
     const heroRef = useRef(null);
     const videoWrapRef = useRef(null);
     const videoRef = useRef(null);
@@ -664,69 +400,94 @@ export default function Hero() {
     const glowRef = useRef(null);
     const leakRef = useRef(null);
 
-    /* ── Client-only state: no mismatch with SSR ── */
+    /* ── Client-only state — avoids SSR/hydration mismatch ── */
     const [mounted, setMounted] = useState(false);
     const [videoReady, setVR] = useState(false);
-    const [isCoarse, setIC] = useState(false);        // default false matches server render
-    const [activeItem, setActive] = useState("Home");
-    const [mobileMenuOpen, setMobileMenu] = useState(false);
+    const [isCoarse, setIC] = useState(false);
 
-    /* Set client-only state AFTER mount to avoid hydration mismatch */
     useEffect(() => {
         setMounted(true);
         setIC(window.matchMedia("(pointer:coarse)").matches);
     }, []);
 
+    /* Video play handler */
     const onCanPlay = useCallback(() => {
         setVR(true);
         videoRef.current?.play().catch(() => { });
     }, []);
 
-    /* ── GSAP SCROLL ── */
+    /* ── GSAP SCROLL ANIMATIONS ── */
     useEffect(() => {
         if (!mounted) return;
 
         const ctx = gsap.context(() => {
             const mm = gsap.matchMedia();
 
+            /* Desktop — rich parallax */
             mm.add("(min-width: 768px)", () => {
                 gsap.to(videoWrapRef.current, {
                     scale: 1.16, y: "7%", ease: "none",
-                    scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: 1.6 },
+                    scrollTrigger: {
+                        trigger: heroRef.current, start: "top top",
+                        end: "bottom top", scrub: 1.6,
+                    },
                 });
                 gsap.to(contentRef.current, {
                     y: "-20%", opacity: 0.08, ease: "none",
-                    scrollTrigger: { trigger: heroRef.current, start: "top top", end: "75% top", scrub: 1.3 },
+                    scrollTrigger: {
+                        trigger: heroRef.current, start: "top top",
+                        end: "75% top", scrub: 1.3,
+                    },
                 });
                 gsap.to(overlayRef.current, {
                     opacity: 0.95, ease: "none",
-                    scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: true },
+                    scrollTrigger: {
+                        trigger: heroRef.current, start: "top top",
+                        end: "bottom top", scrub: true,
+                    },
                 });
                 gsap.to(glowRef.current, {
                     scale: 1.7, opacity: 0.36, ease: "none",
-                    scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: 2.2 },
+                    scrollTrigger: {
+                        trigger: heroRef.current, start: "top top",
+                        end: "bottom top", scrub: 2.2,
+                    },
                 });
                 gsap.to(leakRef.current, {
                     x: "18%", opacity: 0.1, ease: "none",
-                    scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: 1.9 },
+                    scrollTrigger: {
+                        trigger: heroRef.current, start: "top top",
+                        end: "bottom top", scrub: 1.9,
+                    },
                 });
+                /* Idle glow float */
                 gsap.to(glowRef.current, {
                     y: "+=16", duration: 5.5, ease: "sine.inOut", yoyo: true, repeat: -1,
                 });
             });
 
+            /* Mobile — performance-safe subset */
             mm.add("(max-width: 767px)", () => {
                 gsap.to(videoWrapRef.current, {
                     scale: 1.06, y: "3%", ease: "none",
-                    scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: 2.5 },
+                    scrollTrigger: {
+                        trigger: heroRef.current, start: "top top",
+                        end: "bottom top", scrub: 2.5,
+                    },
                 });
                 gsap.to(contentRef.current, {
                     y: "-8%", opacity: 0.15, ease: "none",
-                    scrollTrigger: { trigger: heroRef.current, start: "top top", end: "80% top", scrub: 1.8 },
+                    scrollTrigger: {
+                        trigger: heroRef.current, start: "top top",
+                        end: "80% top", scrub: 1.8,
+                    },
                 });
                 gsap.to(overlayRef.current, {
                     opacity: 0.9, ease: "none",
-                    scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: true },
+                    scrollTrigger: {
+                        trigger: heroRef.current, start: "top top",
+                        end: "bottom top", scrub: true,
+                    },
                 });
             });
         }, heroRef);
@@ -734,11 +495,12 @@ export default function Hero() {
         return () => ctx.revert();
     }, [mounted]);
 
-    /* ════════════════════════════════════════════════════════
+    /* ════════════════════════════════════════════════════════════════
        RENDER
-    ════════════════════════════════════════════════════════ */
+    ════════════════════════════════════════════════════════════════ */
     return (
         <>
+            {/* ── Global styles (fonts + resets) ── */}
             <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@200;300;400;500&display=swap');
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
@@ -754,66 +516,64 @@ export default function Hero() {
         ::-webkit-scrollbar-thumb { background:rgba(201,168,76,.32); border-radius:99px; }
         ::selection               { background:rgba(201,168,76,.2); color:#f5f0e8; }
         button { -webkit-tap-highlight-color:transparent; }
+        @media (pointer:fine) { body { cursor:none; } }
 
-        /* Film grain */
+        /* Film grain pseudo-element */
         .vg-hero::after {
           content:'';
           position:absolute; inset:0;
           background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
           opacity:.023; pointer-events:none; z-index:24; mix-blend-mode:overlay;
         }
-
-        /* Hide desktop nav on mobile, show mobile dock on mobile */
-        .sss-desktop-nav { display:none; }
-        .sss-mobile-top  { display:flex; }
-        @media (min-width:1024px) {
-          .sss-desktop-nav { display:block; }
-          .sss-mobile-top  { display:none; }
-        }
-
-
       `}</style>
 
-            {/* Custom cursor — only mounted client-side, no SSR */}
+            {/* Custom cursor — client-only, fine-pointer only */}
             {mounted && !isCoarse && <CustomCursor />}
 
-            {/* Mobile fullscreen menu */}
-            {mounted && (
-                <MobileMenuOverlay
-                    open={mobileMenuOpen}
-                    onClose={() => setMobileMenu(false)}
-                    activeItem={activeItem}
-                    setActive={setActive}
-                />
-            )}
-
-            {/* ═══════════════════ HERO ═══════════════════ */}
-            <section ref={heroRef} id="home" className="vg-hero"
+            {/* ═══════════════════════ HERO SECTION ═══════════════════════ */}
+            <section
+                ref={heroRef}
+                id="home"
+                className="vg-hero"
                 style={{
-                    position: "relative", width: "100%",
-                    height: "100svh", minHeight: 580, maxHeight: 1000,
-                    overflow: "hidden", background: T.charcoal,
+                    position: "relative",
+                    width: "100%",
+                    /* 100svh = collapses mobile browser chrome bar */
+                    height: "100svh",
+                    minHeight: 580,
+                    maxHeight: 1000,
+                    overflow: "hidden",
+                    background: T.charcoal,
+                    /* pt accounts for fixed Navbar height on desktop */
+                    paddingTop: 0,
                 }}
-                aria-label="Shree Swami Samartha Tours & Travels"
+                aria-label="Shree Swami Samartha Tours & Travels — hero"
             >
 
-                {/* ── VIDEO ── */}
-                <div ref={videoWrapRef} style={{
-                    position: "absolute", inset: "-8%", zIndex: 1,
-                    transformOrigin: "center center", willChange: "transform",
-                }}>
-                    <video ref={videoRef}
+                {/* ── 1 · VIDEO (oversized for zoom headroom) ── */}
+                <div
+                    ref={videoWrapRef}
+                    style={{
+                        position: "absolute", inset: "-8%",
+                        zIndex: 1, transformOrigin: "center center",
+                        willChange: "transform",
+                    }}
+                >
+                    <video
+                        ref={videoRef}
                         src="/videos/travel.mp4"
                         autoPlay muted loop playsInline preload="metadata"
                         onCanPlay={onCanPlay}
                         style={{
-                            position: "absolute", inset: 0, width: "100%", height: "100%",
+                            position: "absolute", inset: 0,
+                            width: "100%", height: "100%",
                             objectFit: "cover",
                             opacity: videoReady ? 1 : 0,
                             transition: "opacity 2.8s ease",
                             willChange: "transform",
                         }}
                     />
+                    {/* Warm fallback while video loads */}
                     {!videoReady && (
                         <div style={{
                             position: "absolute", inset: 0,
@@ -822,126 +582,87 @@ export default function Hero() {
                     )}
                 </div>
 
-                {/* ── OVERLAYS ── */}
-                <div ref={overlayRef} style={{
-                    position: "absolute", inset: 0, zIndex: 2, opacity: .78,
-                    pointerEvents: "none",
-                    background: [
-                        "linear-gradient(90deg,rgba(14,13,11,.92) 0%,rgba(14,13,11,.55) 52%,rgba(14,13,11,.28) 100%)",
-                        "linear-gradient(180deg,rgba(14,13,11,.65) 0%,rgba(14,13,11,.0) 36%,rgba(14,13,11,.0) 54%,rgba(14,13,11,1) 100%)",
-                    ].join(", "),
-                }} />
+                {/* ── 2a · MAIN CINEMATIC OVERLAY ── */}
+                <div
+                    ref={overlayRef}
+                    style={{
+                        position: "absolute", inset: 0, zIndex: 2,
+                        opacity: 0.78, pointerEvents: "none",
+                        background: [
+                            /* strong left panel — keeps text legible on narrow screens */
+                            "linear-gradient(90deg,rgba(14,13,11,.92) 0%,rgba(14,13,11,.55) 52%,rgba(14,13,11,.28) 100%)",
+                            /* top + bottom fades */
+                            "linear-gradient(180deg,rgba(14,13,11,.65) 0%,rgba(14,13,11,.0) 36%,rgba(14,13,11,.0) 54%,rgba(14,13,11,1) 100%)",
+                        ].join(", "),
+                    }}
+                />
 
-                {/* ── GOLDEN GLOW ── */}
-                <div ref={glowRef} style={{
-                    position: "absolute", zIndex: 3, pointerEvents: "none",
-                    width: "80vmax", height: "80vmax",
-                    top: "50%", left: "30%", transform: "translate(-50%,-62%)",
-                    background: "radial-gradient(ellipse,rgba(201,168,76,.17) 0%,rgba(180,100,20,.06) 48%,transparent 70%)",
-                    filter: "blur(50px)", willChange: "transform",
-                }} />
+                {/* ── 2b · GOLDEN AMBIENT GLOW ── */}
+                <div
+                    ref={glowRef}
+                    style={{
+                        position: "absolute", zIndex: 3, pointerEvents: "none",
+                        width: "80vmax", height: "80vmax",
+                        top: "50%", left: "30%",
+                        transform: "translate(-50%,-62%)",
+                        background:
+                            "radial-gradient(ellipse,rgba(201,168,76,.17) 0%,rgba(180,100,20,.06) 48%,transparent 70%)",
+                        filter: "blur(50px)", willChange: "transform",
+                    }}
+                />
 
-                {/* ── LIGHT LEAK ── */}
-                <div ref={leakRef} style={{
-                    position: "absolute", zIndex: 4, pointerEvents: "none",
-                    width: "55vw", height: "100%", top: 0, left: "-8%",
-                    background: "linear-gradient(108deg,rgba(201,168,76,.07) 0%,transparent 55%)",
-                    filter: "blur(28px)",
-                }} />
+                {/* ── 2c · CINEMATIC LIGHT LEAK ── */}
+                <div
+                    ref={leakRef}
+                    style={{
+                        position: "absolute", zIndex: 4, pointerEvents: "none",
+                        width: "55vw", height: "100%", top: 0, left: "-8%",
+                        background:
+                            "linear-gradient(108deg,rgba(201,168,76,.07) 0%,transparent 55%)",
+                        filter: "blur(28px)",
+                    }}
+                />
 
-                {/* ── BOTTOM VIGNETTE ── */}
+                {/* ── 2d · BOTTOM VIGNETTE ── */}
                 <div style={{
-                    position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 5,
-                    height: "44%", pointerEvents: "none",
-                    background: "linear-gradient(to top,rgba(14,13,11,1) 0%,rgba(14,13,11,.72) 36%,transparent 100%)",
+                    position: "absolute", bottom: 0, left: 0, right: 0,
+                    zIndex: 5, height: "44%", pointerEvents: "none",
+                    background:
+                        "linear-gradient(to top,rgba(14,13,11,1) 0%,rgba(14,13,11,.72) 36%,transparent 100%)",
                 }} />
 
-                {/* ── TOP VIGNETTE ── */}
+                {/* ── 2e · TOP VIGNETTE ── */}
                 <div style={{
-                    position: "absolute", top: 0, left: 0, right: 0, zIndex: 5,
-                    height: "22%", pointerEvents: "none",
-                    background: "linear-gradient(to bottom,rgba(14,13,11,.8) 0%,transparent 100%)",
+                    position: "absolute", top: 0, left: 0, right: 0,
+                    zIndex: 5, height: "22%", pointerEvents: "none",
+                    background:
+                        "linear-gradient(to bottom,rgba(14,13,11,.8) 0%,transparent 100%)",
                 }} />
 
-                {/* ── PARTICLES (desktop fine-pointer only, client-side) ── */}
+                {/* ── 3 · PARTICLES — desktop fine-pointer only ── */}
                 {mounted && !isCoarse && <Particles />}
 
-                {/* ══════════════════════════════════════════
-                    DESKTOP TOP NAVBAR (lg and up)
-                ══════════════════════════════════════════ */}
-                <div className="sss-desktop-nav" style={{ position: "absolute", inset: 0, zIndex: 50, pointerEvents: "none" }}>
-                    <div style={{ pointerEvents: "auto" }}>
-                        <DesktopNav activeItem={activeItem} setActive={setActive} />
-                    </div>
-                </div>
-
-                {/* ══════════════════════════════════════════
-                    MOBILE TOP BAR (logo + hamburger)
-                ══════════════════════════════════════════ */}
-                <motion.div
-                    className="sss-mobile-top"
+                {/* ══════════════════════════════════════════════════════════
+            MAIN CONTENT — bottom-anchored so nothing clips on mobile
+        ══════════════════════════════════════════════════════════ */}
+                <div
+                    ref={contentRef}
                     style={{
-                        position: "absolute", top: 0, left: 0, right: 0, zIndex: 50,
-                        alignItems: "center", justifyContent: "space-between",
-                        padding: "18px 20px",
+                        position: "absolute", inset: 0, zIndex: 20,
+                        display: "flex", flexDirection: "column",
+                        justifyContent: "flex-end",   /* BOTTOM-anchor: grows upward */
+                        willChange: "transform",
+                        /*
+                          Padding breakdown:
+                          - top:    80px (clear fixed navbar on desktop)
+                          - sides:  16px min → 72px max (fluid)
+                          - bottom: 80px min (mobile) → 90px max (desktop)
+                                    extra bottom space is handled by scroll indicator size
+                        */
+                        padding:
+                            "80px clamp(16px,5vw,72px) clamp(80px,11vw,90px)",
                     }}
-                    initial={{ opacity: 0, y: -18 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.9, ease: T.ease }}
                 >
-                    {/* Logo */}
-                    <div>
-                        <h1 style={{
-                            fontFamily: "'Cormorant Garamond',serif", fontWeight: 600,
-                            fontSize: 17, color: T.ivory,
-                            letterSpacing: "0.03em", margin: 0, lineHeight: 1.15,
-                        }}>Shree Swami Samartha</h1>
-                        <p style={{
-                            fontFamily: "'Outfit',sans-serif", fontWeight: 300,
-                            fontSize: 7, letterSpacing: "0.44em",
-                            textTransform: "uppercase", color: T.gold,
-                            margin: "2px 0 0",
-                        }}>Tours &amp; Travels</p>
-                    </div>
-
-                    {/* Hamburger */}
-                    <motion.button
-                        onClick={() => setMobileMenu(true)}
-                        style={{
-                            display: "flex", flexDirection: "column", gap: 5,
-                            background: "rgba(14,13,11,0.4)",
-                            border: "1px solid rgba(201,168,76,0.2)",
-                            borderRadius: 12, padding: "10px 12px",
-                            cursor: "pointer",
-                        }}
-                        whileTap={{ scale: 0.92 }}
-                        aria-label="Open menu"
-                    >
-                        {[0, 1, 2].map(i => (
-                            <span key={i} style={{
-                                display: "block", height: 1, borderRadius: 99,
-                                background: "rgba(201,168,76,0.75)",
-                                width: i === 1 ? 14 : 20,
-                                transformOrigin: "left",
-                            }} />
-                        ))}
-                    </motion.button>
-                </motion.div>
-
-                {/* ══════════════════════════════════════════
-                    MAIN CONTENT — BOTTOM-ANCHORED
-                    Mobile: extra bottom padding for dock
-                ══════════════════════════════════════════ */}
-                <div ref={contentRef} style={{
-                    position: "absolute", inset: 0, zIndex: 20,
-                    display: "flex", flexDirection: "column", justifyContent: "flex-end",
-                    willChange: "transform",
-                    /* bottom padding:
-                       - mobile: 110px (scroll dot 36 + dock ~74)
-                       - desktop: 90px (scroll dot only)
-                    */
-                    padding: "80px clamp(16px,5vw,72px) clamp(110px,14vw,90px)",
-                }}>
                     <motion.div
                         style={{ width: "100%", maxWidth: 680 }}
                         variants={stagger}
@@ -949,14 +670,18 @@ export default function Hero() {
                         animate="show"
                     >
 
-                        {/* Eyebrow */}
+                        {/* Eyebrow tag */}
                         <motion.div variants={fadeIn(0)}>
                             <Eyebrow>Maharashtra's Premier Luxury Fleet</Eyebrow>
                         </motion.div>
 
-                        {/* H1 line 1 */}
-                        <div style={{ overflow: "hidden", marginBottom: "clamp(0px,0.8vw,5px)" }}>
-                            <motion.h1 variants={fadeUp(0.08)}
+                        {/* H1 — line 1 */}
+                        <div style={{
+                            overflow: "hidden",
+                            marginBottom: "clamp(0px,0.8vw,5px)",
+                        }}>
+                            <motion.h1
+                                variants={fadeUp(0.08)}
                                 style={{
                                     fontFamily: "'Cormorant Garamond',serif",
                                     fontWeight: 300, lineHeight: 0.93,
@@ -965,11 +690,16 @@ export default function Hero() {
                                     color: "rgba(245,240,232,.97)",
                                     margin: 0,
                                 }}
-                            >Luxury Travel</motion.h1>
+                            >
+                                Luxury Travel
+                            </motion.h1>
                         </div>
 
-                        {/* H1 line 2 — gold italic */}
-                        <div style={{ overflow: "hidden", marginBottom: "clamp(12px,2.5vw,22px)" }}>
+                        {/* H1 — line 2 (gold gradient italic) */}
+                        <div style={{
+                            overflow: "hidden",
+                            marginBottom: "clamp(12px,2.5vw,22px)",
+                        }}>
                             <motion.div variants={fadeUp(0.16)}>
                                 <span style={{
                                     fontFamily: "'Cormorant Garamond',serif",
@@ -981,26 +711,33 @@ export default function Hero() {
                                     WebkitTextFillColor: "transparent",
                                     backgroundClip: "text",
                                     display: "inline-block",
-                                }}>Redefined.</span>
+                                }}>
+                                    Redefined.
+                                </span>
                             </motion.div>
                         </div>
 
                         {/* Location accent */}
-                        <motion.div variants={fadeIn(0.26)}
+                        <motion.div
+                            variants={fadeIn(0.26)}
                             style={{
                                 display: "flex", alignItems: "center", gap: 10,
                                 marginBottom: "clamp(10px,2.2vw,18px)",
-                            }}>
+                            }}
+                        >
                             <span style={{
                                 fontFamily: "'Outfit',sans-serif", fontWeight: 300,
                                 fontSize: "clamp(8px,2vw,12px)", letterSpacing: "0.22em",
                                 textTransform: "uppercase", color: "rgba(201,168,76,.56)",
-                            }}>Across Maharashtra</span>
+                            }}>
+                                Across Maharashtra
+                            </span>
                             <GoldRule w={36} />
                         </motion.div>
 
                         {/* Body copy */}
-                        <motion.p variants={fadeIn(0.32)}
+                        <motion.p
+                            variants={fadeIn(0.32)}
                             style={{
                                 fontFamily: "'Outfit',sans-serif", fontWeight: 300,
                                 fontSize: "clamp(11px,1.9vw,15px)", lineHeight: 1.72,
@@ -1015,8 +752,12 @@ export default function Hero() {
                             memory etched in golden light and sacred silence.
                         </motion.p>
 
-                        {/* ── BUTTONS ── */}
-                        <motion.div variants={fadeIn(0.4)}
+                        {/* ── CTA BUTTONS ─────────────────────────────────────────
+                Mobile: Book Now full-width, WA + Explore 50/50 row
+                Desktop: stays the same — compact enough at any width
+            ──────────────────────────────────────────────────────── */}
+                        <motion.div
+                            variants={fadeIn(0.4)}
                             style={{
                                 display: "flex", flexDirection: "column",
                                 gap: "clamp(9px,1.8vw,12px)",
@@ -1024,12 +765,20 @@ export default function Hero() {
                                 width: "100%",
                             }}
                         >
+                            {/* Row 1 — full-width Book Now */}
                             <motion.div variants={stagger} style={{ width: "100%" }}>
                                 <BookBtn />
                             </motion.div>
 
-                            <motion.div variants={stagger}
-                                style={{ display: "flex", gap: "clamp(8px,1.8vw,12px)", width: "100%" }}>
+                            {/* Row 2 — 50/50 split */}
+                            <motion.div
+                                variants={stagger}
+                                style={{
+                                    display: "flex",
+                                    gap: "clamp(8px,1.8vw,12px)",
+                                    width: "100%",
+                                }}
+                            >
                                 <GlassBtn
                                     borderClr="rgba(255,255,255,0.13)"
                                     textClr="rgba(245,240,232,0.8)"
@@ -1049,28 +798,39 @@ export default function Hero() {
                         </motion.div>
 
                         {/* ── STATS BAR ── */}
-                        <motion.div variants={fadeIn(0.5)}
-                            style={{ display: "flex", gap: "clamp(6px,1.6vw,12px)", width: "100%" }}>
+                        <motion.div
+                            variants={fadeIn(0.5)}
+                            style={{
+                                display: "flex",
+                                gap: "clamp(6px,1.6vw,12px)",
+                                width: "100%",
+                            }}
+                        >
                             <Stat value="500+" label="Tours Done" />
-                            <div style={{ width: 1, background: "rgba(201,168,76,.15)", alignSelf: "stretch" }} />
+                            <div style={{
+                                width: 1, background: "rgba(201,168,76,.15)",
+                                alignSelf: "stretch",
+                            }} />
                             <Stat value="4.9★" label="Rated Luxury" />
-                            <div style={{ width: 1, background: "rgba(201,168,76,.15)", alignSelf: "stretch" }} />
+                            <div style={{
+                                width: 1, background: "rgba(201,168,76,.15)",
+                                alignSelf: "stretch",
+                            }} />
                             <Stat value="12+" label="Destinations" />
                         </motion.div>
 
                     </motion.div>
                 </div>
 
-                {/* ── FLOATING SIDE LABEL (desktop only) ── */}
+                {/* ── FLOATING SIDE LABEL (large desktop only) ── */}
                 <motion.div
+                    className="hidden lg:flex"
                     style={{
                         position: "absolute", right: 22, top: "50%",
                         translateY: "-50%", zIndex: 30,
                         flexDirection: "column", alignItems: "center", gap: 14,
                         pointerEvents: "none",
-                        display: "none",   /* handled by CSS below */
                     }}
-                    className="sss-desktop-nav"
                     initial={{ opacity: 0, x: 14 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 2.2, duration: 1.2, ease: T.ease }}
@@ -1082,23 +842,24 @@ export default function Hero() {
                     <span style={{
                         writingMode: "vertical-rl", transform: "rotate(180deg)",
                         fontFamily: "'Outfit',sans-serif", fontWeight: 300,
-                        fontSize: 7.5, letterSpacing: "0.34em", textTransform: "uppercase",
-                        color: "rgba(201,168,76,.38)",
-                    }}>Since 2014 · Maharashtra</span>
+                        fontSize: 7.5, letterSpacing: "0.34em",
+                        textTransform: "uppercase", color: "rgba(201,168,76,.38)",
+                    }}>
+                        Since 2014 · Maharashtra
+                    </span>
                     <div style={{
                         width: 1, height: 50,
                         background: "linear-gradient(to top,transparent,rgba(201,168,76,.35))",
                     }} />
                 </motion.div>
 
-                {/* ── SCROLL INDICATOR ──
-                <ScrollDot /> */}
+                {/* ── SCROLL INDICATOR ── */}
+                <ScrollDot />
 
-                {/* ── CORNER BRACKETS ── */}
+                {/* ── CINEMATIC CORNER BRACKETS ── */}
                 <Corners />
 
             </section>
-
         </>
     );
 }

@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Sora, Poppins } from "next/font/google";
-
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 const sora = Sora({
   subsets: ["latin"],
   variable: "--font-sora",
@@ -21,7 +22,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${sora.variable} ${poppins.variable}`}>
+        <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   );
