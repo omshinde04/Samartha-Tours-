@@ -43,7 +43,7 @@ export const NAV_ITEMS = [
     { name: "Home", href: "/", icon: <HiOutlineHome /> },
     { name: "About", href: "/about", icon: <HiOutlineUser /> },
     { name: "Services", href: "#services", icon: <HiOutlineBriefcase /> },
-    { name: "Gallery", href: "#gallery", icon: <HiOutlinePhotograph /> },
+    { name: "Gallery", href: "/gallery", icon: <HiOutlinePhotograph /> },
     { name: "Contact", href: "/contact", icon: <HiOutlinePhone /> },
 ];
 
