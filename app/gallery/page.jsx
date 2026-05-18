@@ -5,59 +5,6 @@ import Image from "next/image";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { HiOutlineXMark, HiOutlineArrowLeft, HiOutlineArrowRight } from "react-icons/hi2";
 import { getImages } from "@/lib/galleryApi";
-
-/* ─────────────────────────────────────────────
-   Magnetic cursor dot
-───────────────────────────────────────────── */
-function CursorDot() {
-    const dot = useRef(null);
-    const ring = useRef(null);
-    const pos = useRef({ x: 0, y: 0 });
-    const ringPos = useRef({ x: 0, y: 0 });
-
-    useEffect(() => {
-        const move = (e) => {
-            pos.current = { x: e.clientX, y: e.clientY };
-            if (dot.current) {
-                dot.current.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
-            }
-        };
-        window.addEventListener("mousemove", move);
-
-        let raf;
-        const lerp = (a, b, t) => a + (b - a) * t;
-        const tick = () => {
-            ringPos.current.x = lerp(ringPos.current.x, pos.current.x, 0.12);
-            ringPos.current.y = lerp(ringPos.current.y, pos.current.y, 0.12);
-            if (ring.current) {
-                ring.current.style.transform = `translate(${ringPos.current.x - 20}px, ${ringPos.current.y - 20}px)`;
-            }
-            raf = requestAnimationFrame(tick);
-        };
-        raf = requestAnimationFrame(tick);
-
-        return () => {
-            window.removeEventListener("mousemove", move);
-            cancelAnimationFrame(raf);
-        };
-    }, []);
-
-    return (
-        <>
-            <div
-                ref={dot}
-                className="pointer-events-none fixed top-0 left-0 z-[9999] w-2 h-2 rounded-full bg-[#d4af37] mix-blend-difference"
-                style={{ willChange: "transform" }}
-            />
-            <div
-                ref={ring}
-                className="pointer-events-none fixed top-0 left-0 z-[9998] w-10 h-10 rounded-full border border-[#d4af37]/50 mix-blend-difference"
-                style={{ willChange: "transform" }}
-            />
-        </>
-    );
-}
-
 /* ─────────────────────────────────────────────
    Scroll-reveal wrapper
 ───────────────────────────────────────────── */
@@ -100,83 +47,65 @@ function RevealOnScroll({ children, delay = 0, className = "" }) {
    Gallery card
 ───────────────────────────────────────────── */
 function GalleryCard({ image, index, onClick }) {
-    const ref = useRef(null);
-
-    const handleMouseMove = useCallback((e) => {
-        const el = ref.current;
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 16;
-        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 16;
-        el.style.transform = `perspective(800px) rotateY(${x}deg) rotateX(${-y}deg) translateY(-6px)`;
-    }, []);
-
-    const handleMouseLeave = useCallback(() => {
-        if (ref.current) {
-            ref.current.style.transform =
-                "perspective(800px) rotateY(0deg) rotateX(0deg) translateY(0px)";
-        }
-    }, []);
-
     return (
-        <RevealOnScroll delay={Math.min(index * 0.04, 0.35)} className="break-inside-avoid mb-5">
-            <div
-                ref={ref}
+        <RevealOnScroll delay={Math.min(index * 0.03, 0.2)} className="break-inside-avoid mb-4">
+
+            <motion.div
                 onClick={onClick}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-                className="relative overflow-hidden rounded-[20px] cursor-pointer group border border-white/[0.07] bg-white/[0.02]"
-                style={{ transition: "transform 0.15s ease", willChange: "transform" }}
+                whileHover={{
+                    y: -4,
+                    scale: 1.01,
+                }}
+                transition={{
+                    duration: 0.3,
+                    ease: [0.22, 1, 0.36, 1],
+                }}
+                className="relative overflow-hidden rounded-[18px] cursor-pointer group border border-white/[0.06] bg-white/[0.02]"
             >
-                {/* shimmer sweep */}
-                <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden rounded-[20px]">
-                    <div className="absolute top-0 left-[-100%] w-[60%] h-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent group-hover:left-[160%] transition-all duration-[900ms] ease-in-out" />
-                </div>
 
                 <div className="relative overflow-hidden">
+
                     <Image
                         src={image.src}
                         alt={image.title}
                         width={1000}
                         height={1400}
-                        className="w-full h-auto object-cover transition-transform duration-[800ms] ease-out group-hover:scale-[1.07]"
+                        loading="lazy"
+                        className="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
                     />
 
-                    {/* gradient vignette */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
+                    {/* overlay */}
 
-                    {/* noise grain */}
-                    <div
-                        className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none"
-                        style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-                        }}
-                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
 
-                    {/* card content */}
-                    <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
-                        <div className="flex items-center gap-2 mb-3">
-                            <span className="text-[9px] uppercase tracking-[0.28em] px-3 py-1 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/25 text-[#d4af37]">
+                    {/* content */}
+
+                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
+
+                        <div className="flex items-center gap-2 mb-2">
+
+                            <span className="text-[8px] uppercase tracking-[0.25em] px-3 py-1 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/20 text-[#d4af37]">
                                 {image.category}
                             </span>
-                            <span className="w-1 h-1 rounded-full bg-white/30" />
-                            <span className="text-[9px] uppercase tracking-[0.2em] text-white/30">
+
+                            <span className="w-1 h-1 rounded-full bg-white/20" />
+
+                            <span className="text-[8px] uppercase tracking-[0.2em] text-white/30">
                                 {String(index + 1).padStart(2, "0")}
                             </span>
+
                         </div>
-                        <h3 className="text-xl md:text-2xl font-light tracking-wide leading-tight">
+
+                        <h3 className="text-lg md:text-xl font-light tracking-wide leading-tight text-white/90">
                             {image.title}
                         </h3>
-                        <div className="mt-3 w-0 h-px bg-[#d4af37]/60 group-hover:w-16 transition-all duration-500 ease-out" />
+
                     </div>
 
-                    {/* corner bracket */}
-                    <div className="absolute top-4 right-4 w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="absolute top-0 right-0 w-full h-px bg-[#d4af37]/60" />
-                        <div className="absolute top-0 right-0 w-px h-full bg-[#d4af37]/60" />
-                    </div>
                 </div>
-            </div>
+
+            </motion.div>
+
         </RevealOnScroll>
     );
 }
@@ -258,7 +187,7 @@ function Lightbox({ images, index, onClose, onPrev, onNext }) {
                         alt={image.title}
                         fill
                         className="object-contain"
-                        priority
+                        loading="eager"
                     />
                     {/* info bar */}
                     <motion.div
@@ -375,16 +304,15 @@ export default function GalleryPage() {
     const containerRef = useRef(null);
 
     const { scrollYProgress } = useScroll({ target: containerRef });
-    const heroY = useTransform(scrollYProgress, [0, 0.3], ["0%", "28%"]);
     const heroOpacity = useTransform(scrollYProgress, [0, 0.22], [1, 0]);
 
     const allImages = getImages();
     const categories = [...new Set(allImages.map((img) => img.category))];
-
-    const filteredImages =
+    const filteredImages = (
         activeCategory === "All"
             ? allImages
-            : allImages.filter((img) => img.category === activeCategory);
+            : allImages.filter((img) => img.category === activeCategory)
+    ).slice(0, 24);
 
     const prev = useCallback(
         () => setSelectedImage((i) => (i === null ? null : i === 0 ? filteredImages.length - 1 : i - 1)),
@@ -403,9 +331,8 @@ export default function GalleryPage() {
     return (
         <main
             ref={containerRef}
-            className="min-h-screen bg-[#060606] text-white overflow-x-hidden cursor-none"
+            className="min-h-screen bg-[#060606] text-white overflow-x-hidden"
         >
-            <CursorDot />
 
             {/* ── SCROLL PROGRESS ── */}
             <motion.div
@@ -417,15 +344,15 @@ export default function GalleryPage() {
             <section className="relative min-h-[88svh] md:h-screen flex flex-col justify-end overflow-hidden">
                 {/* ambient glows */}
                 <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full bg-[#d4af37]/[0.04] blur-[120px]" />
-                    <div className="absolute bottom-0 right-1/3 w-[500px] h-[400px] rounded-full bg-[#d4af37]/[0.03] blur-[100px]" />
+                    <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full bg-[#d4af37]/[0.04] blur-[60px]" />
+                    <div className="absolute bottom-0 right-1/3 w-[500px] h-[400px] rounded-full bg-[#d4af37]/[0.03] blur-[50px]" />
                 </div>
 
                 {/* vertical rule */}
                 <div className="absolute left-6 md:left-12 top-24 bottom-24 w-px bg-gradient-to-b from-transparent via-white/[0.08] to-transparent" />
 
                 <motion.div
-                    style={{ y: heroY, opacity: heroOpacity }}
+                    style={{ opacity: heroOpacity }}
                     className="relative z-10 px-6 md:px-16 lg:px-24 pb-12 md:pb-28 pt-24 md:pt-0"
                 >
                     <motion.p
@@ -502,7 +429,7 @@ export default function GalleryPage() {
             </section>
 
             {/* ── MARQUEE ── */}
-            <div className="border-y border-white/[0.05] py-4 overflow-hidden bg-white/[0.01]">
+            <div className="hidden md:block border-y border-white/[0.05] py-4 overflow-hidden bg-white/[0.01]">
                 <motion.div
                     animate={{ x: ["0%", "-50%"] }}
                     transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
