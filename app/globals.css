@@ -91,11 +91,7 @@ body {
 
 /* ─── Custom Cursor ──────────────────────────────────────────────── */
 /* Applied in Hero.jsx via style tag; here for global override */
-@media (pointer: fine) {
-  body {
-    cursor: none;
-  }
-}
+
 
 /* ─── Shimmer Animation (used in Book Now button) ───────────────── */
 @keyframes shimmer {

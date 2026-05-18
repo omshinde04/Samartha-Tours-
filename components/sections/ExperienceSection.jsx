@@ -129,6 +129,7 @@ const DESTINATIONS = [
         highlights: ["Waterfall Experience", "Monsoon Tourism", "Scenic Beauty", "Photography Spot"],
         extra: "The falls are best witnessed from the base during peak monsoon — a roaring wall of water that sends cool mist across the valley floor.",
     },
+
 ];
 
 /* ══════════════════════════════════════════════════════════════════════

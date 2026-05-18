@@ -41,7 +41,7 @@ const T = {
 ══════════════════════════════════════════════════════════════════════ */
 export const NAV_ITEMS = [
     { name: "Home", href: "/", icon: <HiOutlineHome /> },
-    { name: "About", href: "#about", icon: <HiOutlineUser /> },
+    { name: "About", href: "/about", icon: <HiOutlineUser /> },
     { name: "Services", href: "#services", icon: <HiOutlineBriefcase /> },
     { name: "Gallery", href: "#gallery", icon: <HiOutlinePhotograph /> },
     { name: "Contact", href: "/contact", icon: <HiOutlinePhone /> },
@@ -489,7 +489,7 @@ export default function Navbar() {
           .sss-mobile-top  { display: none  !important; }
         }
         button { -webkit-tap-highlight-color: transparent; }
-        @media (pointer: fine) { body { cursor: none; } }
+        // @media (pointer: fine) { body { cursor: none; } }
       `}</style>
 
             {/* Desktop pill navbar */}
