@@ -414,7 +414,7 @@ export default function GalleryPage() {
             />
 
             {/* ── HERO ── */}
-            <section className="relative h-screen flex flex-col justify-end overflow-hidden">
+            <section className="relative min-h-[88svh] md:h-screen flex flex-col justify-end overflow-hidden">
                 {/* ambient glows */}
                 <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full bg-[#d4af37]/[0.04] blur-[120px]" />
@@ -426,7 +426,7 @@ export default function GalleryPage() {
 
                 <motion.div
                     style={{ y: heroY, opacity: heroOpacity }}
-                    className="relative z-10 px-8 md:px-16 lg:px-24 pb-20 md:pb-28"
+                    className="relative z-10 px-6 md:px-16 lg:px-24 pb-12 md:pb-28 pt-24 md:pt-0"
                 >
                     <motion.p
                         initial={{ opacity: 0, x: -20 }}
