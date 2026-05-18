@@ -45,9 +45,14 @@ export default function AboutQuote() {
                 }}
             >
                 <img
-                    src="https://images.unsplash.com/photo-1626015365107-338c19ef7264?w=1400&h=700&fit=crop&q=75"
+                    src="/images/mahabaleshwar.jpg"
                     alt="Mahabaleshwar misty mountains Maharashtra"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                    }}
                     loading="lazy"
                 />
             </motion.div>
