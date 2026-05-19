@@ -176,10 +176,11 @@ export default function FleetSection() {
                                         whileTap={{
                                             scale: 0.97,
                                         }}
+                                        onClick={() => window.location.href = "/services"}
                                         className="mt-10 flex items-center gap-3 rounded-full border border-yellow-500/20 bg-yellow-500 px-6 py-4 text-xs font-medium uppercase tracking-[0.25em] text-black shadow-[0_0_30px_rgba(250,204,21,0.18)]"
                                     >
 
-                                        Explore Fleet
+                                        Explore Services
 
                                         <FiArrowRight />
                                     </motion.button>

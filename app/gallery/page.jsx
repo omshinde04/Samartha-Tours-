@@ -20,6 +20,7 @@ function RevealOnScroll({ children, delay = 0, className = "" }) {
                 if (entry.isIntersecting) {
                     setVisible(true);
                     obs.disconnect();
+
                 }
             },
             { threshold: 0.08 }

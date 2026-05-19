@@ -222,42 +222,83 @@ function Shimmer() {
         />
     );
 }
-
-/* Primary CTA — Book Now */
 function BookBtn() {
     const { ref, sx, sy, onMove, onLeave } = useMagnetic(0.28);
+
+    const handleWhatsAppRedirect = () => {
+        const message = encodeURIComponent(
+            "Hello, I would like to book a trip with Shree Swami Samartha Tours & Travels."
+        );
+
+        window.open(
+            `https://wa.me/919373545169?text=${message}`,
+            "_blank"
+        );
+    };
+
     return (
-        <motion.button ref={ref} variants={popIn}
+        <motion.button
+            ref={ref}
+            variants={popIn}
+            onClick={handleWhatsAppRedirect}
             style={{
-                x: sx, y: sy,
-                position: "relative", overflow: "hidden",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                gap: 10, width: "100%",
+                x: sx,
+                y: sy,
+                position: "relative",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                width: "100%",
                 padding: "clamp(13px,2.5vw,16px) 24px",
                 borderRadius: 99,
                 background: `linear-gradient(135deg,${T.gold} 0%,${T.goldDk} 100%)`,
-                color: T.charcoal, border: "none",
-                fontFamily: "'Outfit',sans-serif", fontWeight: 500,
-                fontSize: "clamp(10px,2.6vw,13px)", letterSpacing: "0.18em",
+                color: T.charcoal,
+                border: "none",
+                fontFamily: "'Outfit',sans-serif",
+                fontWeight: 500,
+                fontSize: "clamp(10px,2.6vw,13px)",
+                letterSpacing: "0.18em",
                 textTransform: "uppercase",
                 boxShadow: "0 8px 38px rgba(201,168,76,0.3)",
                 cursor: "pointer",
             }}
-            onMouseMove={onMove} onMouseLeave={onLeave}
+            onMouseMove={onMove}
+            onMouseLeave={onLeave}
             whileTap={{ scale: 0.96 }}
-            whileHover={{ boxShadow: "0 12px 52px rgba(201,168,76,0.52)" }}
+            whileHover={{
+                boxShadow: "0 12px 52px rgba(201,168,76,0.52)",
+            }}
             aria-label="Book your luxury tour"
         >
             <Shimmer />
-            <span style={{ position: "relative", zIndex: 1 }}>Book Now</span>
-            <motion.span style={{ position: "relative", zIndex: 1 }}
-                whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 320 }}>
+
+            <span
+                style={{
+                    position: "relative",
+                    zIndex: 1,
+                }}
+            >
+                Book Now
+            </span>
+
+            <motion.span
+                style={{
+                    position: "relative",
+                    zIndex: 1,
+                }}
+                whileHover={{ x: 5 }}
+                transition={{
+                    type: "spring",
+                    stiffness: 320,
+                }}
+            >
                 <FiArrowRight size={14} strokeWidth={2.5} />
             </motion.span>
         </motion.button>
     );
 }
-
 /* Glass secondary button — WhatsApp / Explore */
 function GlassBtn({ children, borderClr = "rgba(255,255,255,0.13)",
     textClr = "rgba(245,240,232,0.82)", ariaLabel, href }) {
@@ -787,7 +828,7 @@ export default function Hero() {
                                     <WA /><span>WhatsApp</span>
                                 </GlassBtn>
                                 <GlassBtn
-                                    href="#services"
+                                    href="/services"
                                     borderClr="rgba(201,168,76,0.22)"
                                     textClr="rgba(201,168,76,0.85)"
                                     ariaLabel="Explore tours"
